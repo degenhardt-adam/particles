@@ -109,6 +109,12 @@ const BASE_SPEED = 80; // px/s
 const PARTICLE_COUNT = 100;
 // Size of each grid cell for spatial hashing (should be >= 2 × max radius)
 const CELL_SIZE = 20;
+// NEW: Continuous-spawn parameters and pointer tracking
+const SPAWN_RATE = 200; // particles per second while held
+let isPointerDown = false;
+let pointerX = 0;
+let pointerY = 0;
+let spawnAccumulator = 0;
 
 function random(min, max) {
     return Math.random() * (max - min) + min;
@@ -129,17 +135,24 @@ for (let i = 0; i < PARTICLE_COUNT; i++) {
     spawnParticle(random(0, canvas.width), random(0, canvas.height));
 }
 
-// Add more particles on pointer click/tap
-canvas.addEventListener('pointerdown', (e) => {
+function updatePointer(e) {
     const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    pointerX = e.clientX - rect.left;
+    pointerY = e.clientY - rect.top;
+}
 
-    // Spawn a small burst of particles at click location
-    for (let i = 0; i < 10; i++) {
-        spawnParticle(x, y);
-    }
+// Replace single-burst behaviour with continuous spawning while held
+canvas.addEventListener('pointerdown', (e) => {
+    isPointerDown = true;
+    updatePointer(e);
 });
+
+canvas.addEventListener('pointermove', (e) => {
+    if (isPointerDown) updatePointer(e);
+});
+
+window.addEventListener('pointerup', () => { isPointerDown = false; });
+window.addEventListener('pointercancel', () => { isPointerDown = false; });
 
 /********************
  * Animation Loop   *
@@ -148,6 +161,15 @@ let lastTime = performance.now();
 function animate(now) {
     const dt = (now - lastTime) / 1000; // delta time in seconds
     lastTime = now;
+
+    // Continuous spawn while pointer is down
+    if (isPointerDown) {
+        spawnAccumulator += SPAWN_RATE * dt;
+        while (spawnAccumulator >= 1) {
+            spawnParticle(pointerX, pointerY);
+            spawnAccumulator -= 1;
+        }
+    }
 
     // Fading trail effect
     ctx.fillStyle = 'rgba(17, 17, 17, 0.4)';
