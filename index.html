@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2D Particle Simulator</title>
+    <style>
+        /* Basic reset & styling */
+        html, body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevent scrollbars */
+            background: #111;
+            color: #0f0;
+            font-family: monospace;
+        }
+        #fps {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 4px 8px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Canvas where the particles are rendered -->
+    <canvas id="canvas"></canvas>
+    <!-- Frames-per-second counter -->
+    <div id="fps"></div>
+
+    <!-- Main simulation script -->
+    <script src="script.js"></script>
+</body>
+</html> 
