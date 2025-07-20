@@ -81,7 +81,7 @@ class Particle {
         if (this.fadeProgress < 1) {
             // compute current blended RGB and register as prevColor (as raw string)
             const curRGB = this._blendRGB();
-            this.prevColor = `rgb(${curRGB[0]},${curRGB[1]},${curRGB[2]})`;
+            this.prevColor = rgbToHex(curRGB[0] | 0, curRGB[1] | 0, curRGB[2] | 0);
         } else {
             this.prevColor = this.color;
         }
@@ -91,8 +91,8 @@ class Particle {
     }
 
     _blendRGB() {
-        const [r1, g1, b1] = COLOR_RGB[this.prevColor] || [0, 0, 0];
-        const [r2, g2, b2] = COLOR_RGB[this.color] || [0, 0, 0];
+        const [r1, g1, b1] = getRGB(this.prevColor);
+        const [r2, g2, b2] = getRGB(this.color);
         const p = this.fadeProgress;
         return [
             r1 + (r2 - r1) * p,
@@ -170,6 +170,21 @@ const COLOR_RGB = Object.fromEntries(
         return [col, [(num >> 16) & 255, (num >> 8) & 255, num & 255]];
     })
 );
+
+function parseHexColor(hex) {
+    const num = parseInt(hex.slice(1), 16);
+    return [(num >> 16) & 255, (num >> 8) & 255, num & 255];
+}
+
+function rgbToHex(r, g, b) {
+    return '#' + ((1 << 24) + (r << 16) + (g << 8) + b)
+        .toString(16)
+        .slice(1);
+}
+
+function getRGB(colorStr) {
+    return COLOR_RGB[colorStr] || parseHexColor(colorStr);
+}
 // Color dominance cycle (rainbow order).
 const COLOR_ORDER = COLORS;
 const colorIndexMap = new Map(COLOR_ORDER.map((c, i) => [c, i]));
