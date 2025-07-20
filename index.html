@@ -22,6 +22,16 @@
             background: rgba(0, 0, 0, 0.5);
             border-radius: 4px;
         }
+        /* Spawn rate control slider */
+        #spawn-control {
+            position: absolute;
+            top: 50px;
+            left: 10px;
+            user-select: none;
+        }
+        #spawn-control input[type="range"] {
+            vertical-align: middle;
+        }
     </style>
 </head>
 <body>
@@ -29,6 +39,13 @@
     <canvas id="canvas"></canvas>
     <!-- Frames-per-second counter -->
     <div id="fps"></div>
+
+    <!-- Spawn rate slider -->
+    <div id="spawn-control">
+        Spawn rate:
+        <input type="range" id="spawnRate" min="10" max="1000" value="200" step="10" />
+        <span id="spawnRateValue">200</span>/s
+    </div>
 
     <!-- Main simulation script -->
     <script src="script.js"></script>

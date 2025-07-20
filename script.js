@@ -110,11 +110,26 @@ const PARTICLE_COUNT = 100;
 // Size of each grid cell for spatial hashing (should be >= 2 × max radius)
 const CELL_SIZE = 20;
 // NEW: Continuous-spawn parameters and pointer tracking
-const SPAWN_RATE = 200; // particles per second while held
+let spawnRate = 200; // particles per second while held (can be adjusted via slider)
 let isPointerDown = false;
 let pointerX = 0;
 let pointerY = 0;
 let spawnAccumulator = 0;
+
+// Slider elements for adjusting spawn rate
+const rateSlider = document.getElementById('spawnRate');
+const rateValueLabel = document.getElementById('spawnRateValue');
+if (rateSlider && rateValueLabel) {
+    // Initialize from slider value
+    spawnRate = parseInt(rateSlider.value, 10);
+    rateValueLabel.textContent = rateSlider.value;
+
+    // Listen for changes
+    rateSlider.addEventListener('input', () => {
+        spawnRate = parseInt(rateSlider.value, 10);
+        rateValueLabel.textContent = rateSlider.value;
+    });
+}
 
 function random(min, max) {
     return Math.random() * (max - min) + min;
@@ -164,7 +179,7 @@ function animate(now) {
 
     // Continuous spawn while pointer is down
     if (isPointerDown) {
-        spawnAccumulator += SPAWN_RATE * dt;
+        spawnAccumulator += spawnRate * dt;
         while (spawnAccumulator >= 1) {
             spawnParticle(pointerX, pointerY);
             spawnAccumulator -= 1;
