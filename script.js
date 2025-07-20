@@ -24,6 +24,10 @@ class Particle {
         this.vy = vy;
         this.radius = radius;
         this.color = color;
+
+        // Fade state
+        this.prevColor = color;
+        this.fadeProgress = 1; // 1 = fully new colour
     }
 
     update(dt) {
@@ -47,13 +51,54 @@ class Particle {
             this.y = canvas.height - this.radius;
             this.vy *= -1;
         }
+
+        // Fade progression
+        if (this.fadeProgress < 1) {
+            this.fadeProgress += dt / FADE_TIME;
+            if (this.fadeProgress > 1) this.fadeProgress = 1;
+        }
     }
 
     draw(ctx) {
+        let fill;
+        if (this.fadeProgress === 1) {
+            fill = this.color;
+        } else {
+            const [r, g, b] = this._blendRGB();
+            fill = `rgb(${r | 0},${g | 0},${b | 0})`;
+        }
+
         ctx.beginPath();
         ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-        ctx.fillStyle = this.color;
+        ctx.fillStyle = fill;
         ctx.fill();
+    }
+
+    startFade(newColor) {
+        if (newColor === this.color && this.fadeProgress === 1) return;
+
+        // If a fade already running, use current blended colour as baseline
+        if (this.fadeProgress < 1) {
+            // compute current blended RGB and register as prevColor (as raw string)
+            const curRGB = this._blendRGB();
+            this.prevColor = `rgb(${curRGB[0]},${curRGB[1]},${curRGB[2]})`;
+        } else {
+            this.prevColor = this.color;
+        }
+
+        this.color = newColor;
+        this.fadeProgress = 0;
+    }
+
+    _blendRGB() {
+        const [r1, g1, b1] = COLOR_RGB[this.prevColor] || [0, 0, 0];
+        const [r2, g2, b2] = COLOR_RGB[this.color] || [0, 0, 0];
+        const p = this.fadeProgress;
+        return [
+            r1 + (r2 - r1) * p,
+            g1 + (g2 - g1) * p,
+            b1 + (b2 - b1) * p,
+        ];
     }
 }
 
@@ -103,10 +148,10 @@ function resolveCollision(p1, p2) {
     if (p1.color !== p2.color) {
         if (dominatesColor(p1.color, p2.color)) {
             // p1 overrides p2
-            p2.color = p1.color;
+            p2.startFade(p1.color);
         } else if (dominatesColor(p2.color, p1.color)) {
             // p2 overrides p1
-            p1.color = p2.color;
+            p1.startFade(p2.color);
         }
     }
 }
@@ -116,6 +161,15 @@ function resolveCollision(p1, p2) {
  ******************/
 const particles = [];
 const COLORS = ['#ff595e', '#ffca3a', '#8ac926', '#1982c4', '#6a4c93'];
+// ----- Cross-fade support -----
+const FADE_TIME = 0.15; // seconds for colour blend
+// Precompute RGB triples for palette to avoid re-parsing each frame
+const COLOR_RGB = Object.fromEntries(
+    COLORS.map(col => {
+        const num = parseInt(col.slice(1), 16);
+        return [col, [(num >> 16) & 255, (num >> 8) & 255, num & 255]];
+    })
+);
 // Color dominance cycle (rainbow order).
 const COLOR_ORDER = COLORS;
 const colorIndexMap = new Map(COLOR_ORDER.map((c, i) => [c, i]));
