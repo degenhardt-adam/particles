@@ -98,6 +98,17 @@ function resolveCollision(p1, p2) {
 
     p2.vx = v2nAfter * nx + v2t * tx;
     p2.vy = v2nAfter * ny + v2t * ty;
+
+    // --- Color dominance conversion ---
+    if (p1.color !== p2.color) {
+        if (dominatesColor(p1.color, p2.color)) {
+            // p1 overrides p2
+            p2.color = p1.color;
+        } else if (dominatesColor(p2.color, p1.color)) {
+            // p2 overrides p1
+            p1.color = p2.color;
+        }
+    }
 }
 
 /******************
@@ -105,6 +116,16 @@ function resolveCollision(p1, p2) {
  ******************/
 const particles = [];
 const COLORS = ['#ff595e', '#ffca3a', '#8ac926', '#1982c4', '#6a4c93'];
+// Color dominance cycle (rainbow order).
+const COLOR_ORDER = COLORS;
+const colorIndexMap = new Map(COLOR_ORDER.map((c, i) => [c, i]));
+
+function dominatesColor(colorA, colorB) {
+    const idxA = colorIndexMap.get(colorA);
+    const idxB = colorIndexMap.get(colorB);
+    if (idxA === undefined || idxB === undefined) return false;
+    return idxB === (idxA + 1) % COLOR_ORDER.length;
+}
 const BASE_SPEED = 80; // px/s
 const PARTICLE_COUNT = 100;
 // Size of each grid cell for spatial hashing (should be >= 2 × max radius)
