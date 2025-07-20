@@ -57,7 +57,6 @@ class Particle {
     }
 }
 
-// --- NEW: Elastic collision between two particles ---
 function resolveCollision(p1, p2) {
     const dx = p2.x - p1.x;
     const dy = p2.y - p1.y;
@@ -108,6 +107,8 @@ const particles = [];
 const COLORS = ['#ff595e', '#ffca3a', '#8ac926', '#1982c4', '#6a4c93'];
 const BASE_SPEED = 80; // px/s
 const PARTICLE_COUNT = 100;
+// Size of each grid cell for spatial hashing (should be >= 2 × max radius)
+const CELL_SIZE = 20;
 
 function random(min, max) {
     return Math.random() * (max - min) + min;
@@ -157,14 +158,56 @@ function animate(now) {
         p.update(dt);
     }
 
-    // 2. Resolve pairwise collisions (O(n^2) but fine for small n)
+    // 2. Build spatial hash grid
+    const grid = new Map(); // key -> array of particle indices
+    const getKey = (x, y) => `${x},${y}`;
+
     for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-            resolveCollision(particles[i], particles[j]);
+        const p = particles[i];
+        const gx = Math.floor(p.x / CELL_SIZE);
+        const gy = Math.floor(p.y / CELL_SIZE);
+        const key = getKey(gx, gy);
+        if (!grid.has(key)) grid.set(key, []);
+        grid.get(key).push(i);
+    }
+
+    // 3. Resolve collisions within each cell and with select neighbouring cells
+    const NEIGHBOR_OFFSETS = [
+        [0, 0],  // same cell
+        [1, 0],  // right
+        [0, 1],  // below
+        [1, 1],  // below-right (diagonal)
+        [-1, 1], // below-left
+    ];
+
+    for (const [key, bucket] of grid) {
+        const [cx, cy] = key.split(',').map(Number);
+
+        for (const [dx, dy] of NEIGHBOR_OFFSETS) {
+            const neighborKey = getKey(cx + dx, cy + dy);
+            if (!grid.has(neighborKey)) continue;
+
+            const neighborBucket = grid.get(neighborKey);
+
+            // If checking the same bucket, avoid duplicate pairs by j > i
+            if (neighborBucket === bucket) {
+                for (let a = 0; a < bucket.length; a++) {
+                    for (let b = a + 1; b < bucket.length; b++) {
+                        resolveCollision(particles[bucket[a]], particles[bucket[b]]);
+                    }
+                }
+            } else {
+                // Different buckets: check all pairs (i from bucket, j from neighborBucket)
+                for (const ia of bucket) {
+                    for (const ib of neighborBucket) {
+                        resolveCollision(particles[ia], particles[ib]);
+                    }
+                }
+            }
         }
     }
 
-    // 3. Draw particles
+    // 4. Draw particles
     for (const p of particles) {
         p.draw(ctx);
     }
