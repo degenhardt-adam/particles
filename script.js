@@ -57,6 +57,50 @@ class Particle {
     }
 }
 
+// --- NEW: Elastic collision between two particles ---
+function resolveCollision(p1, p2) {
+    const dx = p2.x - p1.x;
+    const dy = p2.y - p1.y;
+    const dist = Math.hypot(dx, dy);
+    const minDist = p1.radius + p2.radius;
+
+    // No collision if they are apart
+    if (dist >= minDist || dist === 0) return;
+
+    // Normal vector
+    const nx = dx / dist;
+    const ny = dy / dist;
+
+    // Push overlap apart equally to avoid sticking
+    const overlap = minDist - dist;
+    p1.x -= nx * overlap / 2;
+    p1.y -= ny * overlap / 2;
+    p2.x += nx * overlap / 2;
+    p2.y += ny * overlap / 2;
+
+    // Tangent vector
+    const tx = -ny;
+    const ty = nx;
+
+    // Project velocities onto the normal and tangent directions
+    const v1n = p1.vx * nx + p1.vy * ny;
+    const v1t = p1.vx * tx + p1.vy * ty;
+
+    const v2n = p2.vx * nx + p2.vy * ny;
+    const v2t = p2.vx * tx + p2.vy * ty;
+
+    // Swap the normal components (equal mass, perfectly elastic)
+    const v1nAfter = v2n;
+    const v2nAfter = v1n;
+
+    // Convert scalar normal & tangent components back to vectors
+    p1.vx = v1nAfter * nx + v1t * tx;
+    p1.vy = v1nAfter * ny + v1t * ty;
+
+    p2.vx = v2nAfter * nx + v2t * tx;
+    p2.vy = v2nAfter * ny + v2t * ty;
+}
+
 /******************
  * Initialization *
  ******************/
@@ -108,9 +152,20 @@ function animate(now) {
     ctx.fillStyle = 'rgba(17, 17, 17, 0.4)';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Update & draw particles
+    // 1. Update particle positions
     for (const p of particles) {
         p.update(dt);
+    }
+
+    // 2. Resolve pairwise collisions (O(n^2) but fine for small n)
+    for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+            resolveCollision(particles[i], particles[j]);
+        }
+    }
+
+    // 3. Draw particles
+    for (const p of particles) {
         p.draw(ctx);
     }
 
