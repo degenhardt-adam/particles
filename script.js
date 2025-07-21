@@ -306,9 +306,29 @@ canvas.addEventListener('pointercancel', () => {
  * Animation Loop   *
  ********************/
 let lastTime = performance.now();
+function pollRadiusSliders() {
+    if (!minRadiusSlider || !maxRadiusSlider) return;
+    const minVal = parseInt(minRadiusSlider.value, 10);
+    const maxVal = parseInt(maxRadiusSlider.value, 10);
+    if (minVal !== minRadius || maxVal !== maxRadius) {
+        minRadius = minVal;
+        maxRadius = maxVal;
+        minRadiusLabel.textContent = minRadius;
+        maxRadiusLabel.textContent = maxRadius;
+        // Ensure constraints visually if user crossed sliders too fast
+        if (minRadius > maxRadius) {
+            maxRadius = minRadius;
+            maxRadiusSlider.value = minRadius;
+            maxRadiusLabel.textContent = maxRadius;
+        }
+    }
+}
 function animate(now) {
     const dt = (now - lastTime) / 1000; // delta time in seconds
     lastTime = now;
+
+    // Poll sliders each frame (covers mobile edge-cases where 'input' isn't fired)
+    pollRadiusSliders();
 
     // Continuous spawn while pointer is down
     if (isPointerDown) {
