@@ -39,6 +39,15 @@
             top: 80px;
             left: 10px;
             user-select: none;
+            display: flex;
+            flex-direction: column;
+            row-gap: 4px;
+        }
+
+        #size-control .slider-row {
+            display: flex;
+            align-items: center;
+            column-gap: 6px;
         }
     </style>
 </head>
@@ -57,16 +66,18 @@
 
     <!-- Particle size sliders -->
     <div id="size-control">
-        Size:&nbsp;
-        <label>min
-            <input type="range" id="minRadius" min="1" max="15" value="3" />
-            <span id="minRadiusValue">3</span>px
-        </label>
-        &nbsp;
-        <label>max
-            <input type="range" id="maxRadius" min="1" max="15" value="8" />
-            <span id="maxRadiusValue">8</span>px
-        </label>
+        <div class="slider-row">
+            <label>Min size
+                <input type="range" id="minRadius" min="1" max="15" value="3" />
+                <span id="minRadiusValue">3</span>px
+            </label>
+        </div>
+        <div class="slider-row">
+            <label>Max size
+                <input type="range" id="maxRadius" min="1" max="15" value="8" />
+                <span id="maxRadiusValue">8</span>px
+            </label>
+        </div>
     </div>
 
     <!-- Main simulation script -->
