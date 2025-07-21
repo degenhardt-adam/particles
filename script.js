@@ -233,9 +233,11 @@ if (minRadiusSlider && maxRadiusSlider) {
 }
 
 // ----- Eraser -----
-const ERASER_RADIUS = 25;
+let eraserRadius = 25;
 let eraserEnabled = false;
 const eraserToggle = document.getElementById('eraserToggle');
+const eraserRadiusSlider = document.getElementById('eraserRadius');
+const eraserRadiusLabel = document.getElementById('eraserRadiusValue');
 if (eraserToggle) {
     eraserEnabled = eraserToggle.checked;
     eraserToggle.addEventListener('change', () => {
@@ -243,13 +245,23 @@ if (eraserToggle) {
     });
 }
 
+if (eraserRadiusSlider) {
+    eraserRadius = parseInt(eraserRadiusSlider.value, 10);
+    eraserRadiusLabel.textContent = eraserRadius;
+    ['input', 'change'].forEach(evt => {
+        eraserRadiusSlider.addEventListener(evt, () => {
+            eraserRadius = parseInt(eraserRadiusSlider.value, 10);
+            eraserRadiusLabel.textContent = eraserRadius;
+        });
+    });
+}
+
 function eraseParticles() {
-    const limitSq = (ERASER_RADIUS);
     for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
         const dx = p.x - pointerX;
         const dy = p.y - pointerY;
-        const r = ERASER_RADIUS + p.radius;
+        const r = eraserRadius + p.radius;
         if (dx * dx + dy * dy <= r * r) {
             particles.splice(i, 1);
         }
@@ -352,7 +364,7 @@ function animate(now) {
     lastTime = now;
 
     // Poll sliders each frame (covers mobile edge-cases where 'input' isn't fired)
-    pollRadiusSliders();
+    pollRadiusSliders(); // also updates eraser radius via event, but safe
 
     // Eraser or spawn behaviour while pointer is down
     if (isPointerDown && eraserEnabled) {
@@ -433,7 +445,7 @@ function animate(now) {
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.arc(pointerX, pointerY, ERASER_RADIUS, 0, Math.PI * 2);
+        ctx.arc(pointerX, pointerY, eraserRadius, 0, Math.PI * 2);
         ctx.stroke();
     }
 

@@ -54,6 +54,9 @@
             top: 140px;
             left: 10px;
             user-select: none;
+            display: flex;
+            flex-direction: column;
+            row-gap: 4px;
         }
     </style>
 </head>
@@ -88,8 +91,14 @@
     <!-- Eraser toggle -->
     <div id="eraser-control">
         <label>
-            <input type="checkbox" id="eraserToggle" /> Eraser mode
+            <input type="checkbox" id="eraserToggle" /> Eraser
         </label>
+        <div class="slider-row">
+            <label>radius
+                <input type="range" id="eraserRadius" min="5" max="200" value="25" />
+                <span id="eraserRadiusValue">25</span>px
+            </label>
+        </div>
     </div>
 
     <!-- Main simulation script -->
