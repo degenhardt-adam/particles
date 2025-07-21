@@ -209,10 +209,10 @@ const maxRadiusSlider = document.getElementById('maxRadius');
 const minRadiusLabel = document.getElementById('minRadiusValue');
 const maxRadiusLabel = document.getElementById('maxRadiusValue');
 
-function syncRadiusUI() {
+function syncRadiusUI(e) {
     // Ensure constraints: min <= max
     if (parseInt(minRadiusSlider.value, 10) > parseInt(maxRadiusSlider.value, 10)) {
-        if (event && event.target === minRadiusSlider) {
+        if (e && e.target === minRadiusSlider) {
             maxRadiusSlider.value = minRadiusSlider.value;
         } else {
             minRadiusSlider.value = maxRadiusSlider.value;
@@ -226,8 +226,10 @@ function syncRadiusUI() {
 
 if (minRadiusSlider && maxRadiusSlider) {
     syncRadiusUI();
-    minRadiusSlider.addEventListener('input', syncRadiusUI);
-    maxRadiusSlider.addEventListener('input', syncRadiusUI);
+    ['input', 'change'].forEach(evt => {
+        minRadiusSlider.addEventListener(evt, syncRadiusUI);
+        maxRadiusSlider.addEventListener(evt, syncRadiusUI);
+    });
 }
 // NEW: Continuous-spawn parameters and pointer tracking
 let spawnRate = 200; // particles per second while held (can be adjusted via slider)
