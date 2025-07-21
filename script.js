@@ -199,6 +199,36 @@ const BASE_SPEED = 80; // px/s
 const PARTICLE_COUNT = 100;
 // Size of each grid cell for spatial hashing (should be >= 2 × max radius)
 const CELL_SIZE = 20;
+
+// ----- Particle size from UI -----
+let minRadius = 3;
+let maxRadius = 8;
+
+const minRadiusSlider = document.getElementById('minRadius');
+const maxRadiusSlider = document.getElementById('maxRadius');
+const minRadiusLabel = document.getElementById('minRadiusValue');
+const maxRadiusLabel = document.getElementById('maxRadiusValue');
+
+function syncRadiusUI() {
+    // Ensure constraints: min <= max
+    if (parseInt(minRadiusSlider.value, 10) > parseInt(maxRadiusSlider.value, 10)) {
+        if (event && event.target === minRadiusSlider) {
+            maxRadiusSlider.value = minRadiusSlider.value;
+        } else {
+            minRadiusSlider.value = maxRadiusSlider.value;
+        }
+    }
+    minRadius = parseInt(minRadiusSlider.value, 10);
+    maxRadius = parseInt(maxRadiusSlider.value, 10);
+    minRadiusLabel.textContent = minRadius;
+    maxRadiusLabel.textContent = maxRadius;
+}
+
+if (minRadiusSlider && maxRadiusSlider) {
+    syncRadiusUI();
+    minRadiusSlider.addEventListener('input', syncRadiusUI);
+    maxRadiusSlider.addEventListener('input', syncRadiusUI);
+}
 // NEW: Continuous-spawn parameters and pointer tracking
 let spawnRate = 200; // particles per second while held (can be adjusted via slider)
 let isPointerDown = false;
@@ -226,7 +256,7 @@ function random(min, max) {
 }
 
 function spawnParticle(x, y) {
-    const radius = random(3, 8);
+    const radius = random(minRadius, maxRadius);
     const angle = random(0, Math.PI * 2);
     const speed = random(BASE_SPEED * 0.5, BASE_SPEED * 1.5);
     const vx = Math.cos(angle) * speed;
