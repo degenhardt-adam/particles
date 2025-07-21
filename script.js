@@ -278,16 +278,27 @@ function updatePointer(e) {
 
 // Replace single-burst behaviour with continuous spawning while held
 canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
     isPointerDown = true;
     updatePointer(e);
+    if (canvas.setPointerCapture) {
+        canvas.setPointerCapture(e.pointerId);
+    }
 });
 
 canvas.addEventListener('pointermove', (e) => {
-    if (isPointerDown) updatePointer(e);
+    if (!isPointerDown) return;
+    e.preventDefault();
+    updatePointer(e);
 });
 
-window.addEventListener('pointerup', () => { isPointerDown = false; });
-window.addEventListener('pointercancel', () => { isPointerDown = false; });
+canvas.addEventListener('pointerup', () => {
+    isPointerDown = false;
+});
+
+canvas.addEventListener('pointercancel', () => {
+    isPointerDown = false;
+});
 
 /********************
  * Animation Loop   *
