@@ -198,7 +198,7 @@ function dominatesColor(colorA, colorB) {
 const BASE_SPEED = 80; // px/s
 const PARTICLE_COUNT = 100;
 // Size of each grid cell for spatial hashing (should be >= 2 × max radius)
-const CELL_SIZE = 20;
+const CELL_SIZE = 32;
 
 // ----- Particle size from UI -----
 let minRadius = 3;
