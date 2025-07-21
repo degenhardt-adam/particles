@@ -358,6 +358,15 @@ function pollRadiusSliders() {
             maxRadiusLabel.textContent = maxRadius;
         }
     }
+
+    // --- Poll eraser radius slider ---
+    if (eraserRadiusSlider) {
+        const erVal = parseInt(eraserRadiusSlider.value, 10);
+        if (erVal !== eraserRadius) {
+            eraserRadius = erVal;
+            eraserRadiusLabel.textContent = eraserRadius;
+        }
+    }
 }
 function animate(now) {
     const dt = (now - lastTime) / 1000; // delta time in seconds
