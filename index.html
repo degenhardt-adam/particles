@@ -49,6 +49,12 @@
             align-items: center;
             column-gap: 6px;
         }
+        #eraser-control {
+            position: absolute;
+            top: 140px;
+            left: 10px;
+            user-select: none;
+        }
     </style>
 </head>
 <body>
@@ -78,6 +84,12 @@
                 <span id="maxRadiusValue">8</span>px
             </label>
         </div>
+    </div>
+    <!-- Eraser toggle -->
+    <div id="eraser-control">
+        <label>
+            <input type="checkbox" id="eraserToggle" /> Eraser mode
+        </label>
     </div>
 
     <!-- Main simulation script -->

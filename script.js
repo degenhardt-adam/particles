@@ -231,6 +231,30 @@ if (minRadiusSlider && maxRadiusSlider) {
         maxRadiusSlider.addEventListener(evt, syncRadiusUI);
     });
 }
+
+// ----- Eraser -----
+const ERASER_RADIUS = 25;
+let eraserEnabled = false;
+const eraserToggle = document.getElementById('eraserToggle');
+if (eraserToggle) {
+    eraserEnabled = eraserToggle.checked;
+    eraserToggle.addEventListener('change', () => {
+        eraserEnabled = eraserToggle.checked;
+    });
+}
+
+function eraseParticles() {
+    const limitSq = (ERASER_RADIUS);
+    for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        const dx = p.x - pointerX;
+        const dy = p.y - pointerY;
+        const r = ERASER_RADIUS + p.radius;
+        if (dx * dx + dy * dy <= r * r) {
+            particles.splice(i, 1);
+        }
+    }
+}
 // NEW: Continuous-spawn parameters and pointer tracking
 let spawnRate = 200; // particles per second while held (can be adjusted via slider)
 let isPointerDown = false;
@@ -330,8 +354,10 @@ function animate(now) {
     // Poll sliders each frame (covers mobile edge-cases where 'input' isn't fired)
     pollRadiusSliders();
 
-    // Continuous spawn while pointer is down
-    if (isPointerDown) {
+    // Eraser or spawn behaviour while pointer is down
+    if (isPointerDown && eraserEnabled) {
+        eraseParticles();
+    } else if (isPointerDown) {
         spawnAccumulator += spawnRate * dt;
         while (spawnAccumulator >= 1) {
             spawnParticle(pointerX, pointerY);
@@ -400,6 +426,15 @@ function animate(now) {
     // 4. Draw particles
     for (const p of particles) {
         p.draw(ctx);
+    }
+
+    // Draw eraser overlay
+    if (isPointerDown && eraserEnabled) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.arc(pointerX, pointerY, ERASER_RADIUS, 0, Math.PI * 2);
+        ctx.stroke();
     }
 
     // FPS counter
